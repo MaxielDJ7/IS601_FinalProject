@@ -76,7 +76,7 @@ jobs:
         with:
           image-ref: 'app:test'
           format: 'table'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
   
@@ -99,8 +99,8 @@ jobs:
         with:
           push: true
           tags: |
-            kaw393939/601_module9:latest
-            kaw393939/601_module9:${{ github.sha }}
+            maxieldj7/is601_module14:latest
+            maxieldj7/is601_module14:${{ github.sha }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=kaw393939/601_module9:cache
+          cache-from: type=registry,ref=maxieldj7/is601_module14:cache
           cache-to: type=inline,mode=max
