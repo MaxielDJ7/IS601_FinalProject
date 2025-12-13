@@ -1,3 +1,4 @@
+alembic==1.13.2
 redis==5.0.1
 bcrypt==4.1.2
 annotated-types==0.7.0
