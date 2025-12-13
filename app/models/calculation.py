@@ -185,7 +185,7 @@ class AbstractCalculation:
             raise ValueError(f"Unsupported calculation type: {calculation_type}")
         return calculation_class(user_id=user_id, inputs=inputs)
 
-    def get_result(self) -> float:
+    def get_result(self) -> float: # pragma: no cover
         """
         Method to compute calculation result.
         
