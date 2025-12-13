@@ -234,24 +234,24 @@ def test_divide_by_zero() -> None:
         f"Expected error message 'Cannot divide by zero!', but got '{excinfo.value}'"
 
 # ---------------------------------------------
-# Unit Tests for the 'multiply' Function
+# Unit Tests for the 'power' Function
 # ---------------------------------------------
 
 @pytest.mark.parametrize(
     "a, b, expected",
     [
-        (2, 3, 6),           # Test multiplying two positive integers
-        (-2, 3, -6),         # Test multiplying a negative integer with a positive integer
-        (2.5, 4.0, 10.0),    # Test multiplying two positive floats
-        (-2.5, 4.0, -10.0),  # Test multiplying a negative float with a positive float
-        (0, 5, 0),            # Test multiplying zero with a positive integer
+        (2, 3, 8),           # Test exponentiating two positive integers
+        (-2, 3, -8),         # Test exponentiating a negative integer with a positive integer
+        (2.0, 4.0, 16.0),    # Test exponentiating two positive floats
+        (-2, 5.0, -32.0),  # Test exponentiating a negative float with a positive float
+        (0, 5, 0),            # Test exponentiating zero with a positive integer
     ],
     ids=[
-        "multiply_two_positive_integers",
-        "multiply_negative_and_positive_integer",
-        "multiply_two_positive_floats",
-        "multiply_negative_float_and_positive_float",
-        "multiply_zero_and_positive_integer",
+        "power_two_positive_integers",
+        "power_negative_and_positive_integer",
+        "power_two_positive_floats",
+        "power_negative_float_and_positive_float",
+        "power_zero_and_positive_integer",
     ]
 )
 def test_power(a: Number, b: Number, expected: Number) -> None:
