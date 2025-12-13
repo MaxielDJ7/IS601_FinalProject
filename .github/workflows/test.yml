@@ -99,8 +99,8 @@ jobs:
         with:
           push: true
           tags: |
-            maxieldj7/is601_module14:latest
-            maxieldj7/is601_module14:${{ github.sha }}
+            maxieldj7/is601_finalproject:latest
+            maxieldj7/is601_finalproject:${{ github.sha }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=maxieldj7/is601_module14:cache
+          cache-from: type=registry,ref=maxieldj7/is601_finalproject:cache
           cache-to: type=inline,mode=max
