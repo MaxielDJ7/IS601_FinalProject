@@ -178,6 +178,7 @@ class AbstractCalculation:
             'subtraction': Subtraction,
             'multiplication': Multiplication,
             'division': Division,
+            'power' : Power
         }
         calculation_class = calculation_classes.get(calculation_type.lower())
         if not calculation_class:
@@ -354,3 +355,31 @@ class Division(Calculation):
                 raise ValueError("Cannot divide by zero.")
             result /= value
         return result
+    
+class Power(Calculation):
+    """
+    Power calculation subclass.
+    
+    Implements exponentiation.
+    Examples:
+        [2, 3] -> 2 ** 3 = 8
+    """
+    __mapper_args__ = {"polymorphic_identity": "power"}
+
+    def get_result(self) -> float:
+        """
+        Calculate the exponentiation of two input values.
+        
+        Returns:
+            float: The result of a ** b.
+            
+        Raises:
+            ValueError: If inputs are not a list or if 2 numbers are not provided
+        """
+        if not isinstance(self.inputs, list):
+            raise ValueError("Inputs must be a list of numbers.")
+        if len(self.inputs) != 2:
+            raise ValueError("Inputs must be a list with two numbers.")
+        
+        base, exponent = self.inputs
+        return base ** exponent
