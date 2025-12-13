@@ -287,6 +287,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       case 'multiplication':
         result = inputs.reduce((a, b) => a * b, 1);
         break;
+      case 'power':
+        result = inputs.reduce((a, b) => a ** b);
+        break;
       case 'division':
         // Avoid division by zero
         if (inputs.some((value, index) => index > 0 && value === 0)) {
@@ -330,6 +333,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       case 'division':
         operator = '÷';
         break;
+      case 'power':
+        operator = '**';
+        break;
       default:
         operator = '?';
     }
@@ -339,6 +345,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       previewResult.innerHTML = `
         <p class="text-gray-500 text-center">
           Enter at least two valid numbers to see the preview
+        </p>
+      `;
+      return;
+    }
+
+    if (calcTypeInput.value === 'power' && (inputs.length > 2)){
+      previewResult.innerHTML = `
+        <p class="text-gray-500 text-center">
+          Only two numbers allowed for exponentiation.
         </p>
       `;
       return;
@@ -454,6 +469,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('inputHelp').textContent = 'Enter two or more numbers separated by commas.';
         calcInputsInput.removeEventListener('input', removeErrorOnce);
       });
+      
+      return;
+    }
+
+    // Check for more than two inputs for exponentiation
+    if (calcTypeInput.value === 'power' && (newInputs.length > 2)){
+      showError('Only two numbers allowed for exponentiation.');
+
+      // Add error class to the input
+      calcInputsInput.classList.add('border-red-500', 'bg-red-50');
+      document.getElementById('inputHelp').classList.add('text-red-500');
+      document.getElementById('inputHelp').textContent = 'Only two numbers allowed for exponentiation.';
       
       return;
     }
