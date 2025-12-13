@@ -47,8 +47,8 @@ def test_power_get_result():
     Test that Power.get_result returns the correct exponentiation.
     """
     inputs = [2, 3]
-    multiplication = Multiplication(user_id=dummy_user_id(), inputs=inputs)
-    result = multiplication.get_result()
+    power = Power(user_id=dummy_user_id(), inputs=inputs)
+    result = power.get_result()
     assert result == 8, f"Expected 8, got {result}"
 
 def test_division_get_result():
@@ -188,6 +188,6 @@ def test_invalid_inputs_for_power():
     Test that providing fewer than two numbers to Power.get_result raises a ValueError.
     """
     power = Power(user_id=dummy_user_id(), inputs=[10])
-    with pytest.raises(ValueError, match="Inputs must be a list with at least two numbers."):
+    with pytest.raises(ValueError, match="Inputs must be a list with two numbers."):
         power.get_result()
 
