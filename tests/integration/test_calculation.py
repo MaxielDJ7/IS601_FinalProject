@@ -4,9 +4,10 @@ import uuid
 from app.models.calculation import (
     Calculation,
     Addition,
+    Power,
     Subtraction,
     Multiplication,
-    Division,
+    Division
 )
 
 # Helper function to create a dummy user_id for testing.
@@ -40,6 +41,15 @@ def test_multiplication_get_result():
     multiplication = Multiplication(user_id=dummy_user_id(), inputs=inputs)
     result = multiplication.get_result()
     assert result == 24, f"Expected 24, got {result}"
+
+def test_power_get_result():
+    """
+    Test that Power.get_result returns the correct exponentiation.
+    """
+    inputs = [2, 3]
+    multiplication = Multiplication(user_id=dummy_user_id(), inputs=inputs)
+    result = multiplication.get_result()
+    assert result == 8, f"Expected 8, got {result}"
 
 def test_division_get_result():
     """
@@ -102,6 +112,20 @@ def test_calculation_factory_multiplication():
     assert isinstance(calc, Multiplication), "Factory did not return a Multiplication instance."
     assert calc.get_result() == 24, "Incorrect multiplication result."
 
+def test_calculation_factory_power():
+    """
+    Test the Calculation.create factory method for power.
+    """
+    inputs = [3, 2]
+    calc = Calculation.create(
+        calculation_type='power',
+        user_id=dummy_user_id(),
+        inputs=inputs,
+    )
+    # Expected: 3 ** 2 = 9
+    assert isinstance(calc, Power), "Factory did not return an exponentiation instance."
+    assert calc.get_result() == 9, "Incorrect exponentiation result."
+
 def test_calculation_factory_division():
     """
     Test the Calculation.create factory method for division.
@@ -150,3 +174,20 @@ def test_invalid_inputs_for_division():
     division = Division(user_id=dummy_user_id(), inputs=[10])
     with pytest.raises(ValueError, match="Inputs must be a list with at least two numbers."):
         division.get_result()
+
+def test_invalid_inputs_for_multiplication():
+    """
+    Test that providing fewer than two numbers to Multiplication.get_result raises a ValueError.
+    """
+    multiplication = Multiplication(user_id=dummy_user_id(), inputs=[10])
+    with pytest.raises(ValueError, match="Inputs must be a list with at least two numbers."):
+        multiplication.get_result()
+
+def test_invalid_inputs_for_power():
+    """
+    Test that providing fewer than two numbers to Power.get_result raises a ValueError.
+    """
+    power = Power(user_id=dummy_user_id(), inputs=[10])
+    with pytest.raises(ValueError, match="Inputs must be a list with at least two numbers."):
+        power.get_result()
+
