@@ -118,3 +118,24 @@ def divide(a: Number, b: Number) -> float:
     # Perform division of a by b and return the result as a float
     result = a / b
     return result
+
+def power(a: Number, b: Number) -> Number:
+    """
+    Calculate the exponentiation of two input values.
+
+    Parameters:
+    - a (int or float): The first number to raise to the power of b.
+    - b (int or float): The exponent.
+
+    Returns:
+    - int or float: The result of a ** b.
+
+    Example:
+    >>> power(2, 3)
+    8
+    >>> power(2.5, 4)
+    39.0625
+    """
+    # Perform exponentiation of a and b
+    result = a ** b
+    return result
