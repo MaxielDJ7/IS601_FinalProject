@@ -2,7 +2,7 @@
 
 import pytest  # Import the pytest framework for writing and running tests
 from typing import Union  # Import Union for type hinting multiple possible types
-from app.operations import add, subtract, multiply, divide  # Import the calculator functions from the operations module
+from app.operations import add, power, subtract, multiply, divide  # Import the calculator functions from the operations module
 
 # Define a type alias for numbers that can be either int or float
 Number = Union[int, float]
@@ -232,3 +232,51 @@ def test_divide_by_zero() -> None:
     # Assert that the exception message contains the expected error message
     assert "Cannot divide by zero!" in str(excinfo.value), \
         f"Expected error message 'Cannot divide by zero!', but got '{excinfo.value}'"
+
+# ---------------------------------------------
+# Unit Tests for the 'multiply' Function
+# ---------------------------------------------
+
+@pytest.mark.parametrize(
+    "a, b, expected",
+    [
+        (2, 3, 6),           # Test multiplying two positive integers
+        (-2, 3, -6),         # Test multiplying a negative integer with a positive integer
+        (2.5, 4.0, 10.0),    # Test multiplying two positive floats
+        (-2.5, 4.0, -10.0),  # Test multiplying a negative float with a positive float
+        (0, 5, 0),            # Test multiplying zero with a positive integer
+    ],
+    ids=[
+        "multiply_two_positive_integers",
+        "multiply_negative_and_positive_integer",
+        "multiply_two_positive_floats",
+        "multiply_negative_float_and_positive_float",
+        "multiply_zero_and_positive_integer",
+    ]
+)
+def test_power(a: Number, b: Number, expected: Number) -> None:
+    """
+    Test the 'power' function with various combinations of integers and floats.
+
+    This parameterized test verifies that the 'power' function correctly raises a to the power of b,
+    handling both positive and negative values, as well as integers and floats. Parameterization
+    enables efficient testing of multiple scenarios in a concise manner.
+
+    Parameters:
+    - a (Number): The base number.
+    - b (Number): The exponent.
+    - expected (Number): The expected result of the exponentiation.
+
+    Steps:
+    1. Call the 'power' function with arguments 'a' and 'b'.
+    2. Assert that the result is equal to 'expected'.
+
+    Example:
+    >>> test_power(2, 3, 8)
+    >>> test_power(-2, 3, -8)
+    """
+    # Call the 'power' function with the provided arguments
+    result = power(a, b)
+    
+    # Assert that the result of power(a, b) matches the expected value
+    assert result == expected, f"Expected power({a}, {b}) to be {expected}, but got {result}"
