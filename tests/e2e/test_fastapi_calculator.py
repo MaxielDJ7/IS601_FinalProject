@@ -205,6 +205,30 @@ def test_create_calculation_multiplication(base_url: str):
     # Expected result: 2 * 3 * 4 = 24
     assert "result" in data and data["result"] == 24, f"Expected result 24, got {data.get('result')}"
 
+def test_create_calculation_power(base_url: str):
+    user_data = {
+        "first_name": "Calc",
+        "last_name": "Power",
+        "email": f"calc.power{uuid4()}@example.com",
+        "username": f"calc_power_{uuid4()}",
+        "password": "SecurePass123!",
+        "confirm_password": "SecurePass123!"
+    }
+    token_data = register_and_login(base_url, user_data)
+    access_token = token_data["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"{base_url}/calculations"
+    payload = {
+        "type": "power",
+        "inputs": [2, 3],
+        "user_id": "ignored"
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    assert response.status_code == 201, f"Power calculation creation failed: {response.text}"
+    data = response.json()
+    # Expected result: 2 ** 3 = 8
+    assert "result" in data and data["result"] == 8, f"Expected result 8, got {data.get('result')}"
+
 def test_create_calculation_division(base_url: str):
     user_data = {
         "first_name": "Calc",
@@ -318,3 +342,9 @@ def test_model_division():
     with pytest.raises(ValueError):
         calc_zero = Calculation.create("division", dummy_user_id, [100, 0])
         calc_zero.get_result()
+
+def test_model_power():
+    dummy_user_id = uuid4()
+    calc = Calculation.create("power", dummy_user_id, [2, 3])
+    result = calc.get_result()
+    assert result == 8, f"Multiplication result incorrect: expected 8, got {result}"
