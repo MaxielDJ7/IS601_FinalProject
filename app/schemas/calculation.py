@@ -36,6 +36,7 @@ class CalculationType(str, Enum):
     SUBTRACTION = "subtraction"
     MULTIPLICATION = "multiplication"
     DIVISION = "division"
+    POWER = "power"
 
 class CalculationBase(BaseModel):
     """
@@ -49,7 +50,7 @@ class CalculationBase(BaseModel):
     """
     type: CalculationType = Field(
         ...,  # The ... means this field is required
-        description="Type of calculation (addition, subtraction, multiplication, division)",
+        description="Type of calculation (addition, subtraction, multiplication, division, power)",
         example="addition"
     )
     inputs: List[float] = Field(
@@ -126,6 +127,9 @@ class CalculationBase(BaseModel):
         """
         if len(self.inputs) < 2:
             raise ValueError("At least two numbers are required for calculation")
+        if self.type == CalculationType.POWER and len(self.inputs) > 2:
+            # Prevent more than two numbers for exponentiation
+            raise ValueError("Only two number are required for exponentiation")
         if self.type == CalculationType.DIVISION:
             # Prevent division by zero (skip the first value as numerator)
             if any(x == 0 for x in self.inputs[1:]):
