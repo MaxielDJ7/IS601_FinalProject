@@ -97,3 +97,30 @@ def test_calculation_response_valid():
     assert calc_response.type == "subtraction"
     assert calc_response.inputs == [20, 5]
     assert calc_response.result == 15.5
+
+    
+def test_calculation_input_length_power():
+    data = {
+        "type": "power",
+        "inputs": [2,3,2],
+        "user_id": uuid4()
+    }
+    with pytest.raises(ValidationError) as exc_info:
+        CalculationCreate(**data)
+    error_message = str(exc_info.value)
+    # Ensure that our custom error message is present (case-insensitive)
+    assert "only two number are required for exponentiation" in error_message.lower(), error_message
+
+def test_calculation_divison_by_zero():
+    data = {
+        "type": "division",
+        "inputs": [10,0],
+        "user_id": uuid4()
+    }
+    with pytest.raises(ValidationError) as exc_info:
+        CalculationCreate(**data)
+    error_message = str(exc_info.value)
+    # Ensure that our custom error message is present (case-insensitive)
+    assert "cannot divide by zero" in error_message.lower(), error_message
+
+
