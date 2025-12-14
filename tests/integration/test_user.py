@@ -5,6 +5,7 @@
 #          Relies on 'conftest.py' for database session management and test isolation.
 # ======================================================================================
 
+from pydantic import ValidationError
 import pytest
 import logging
 from sqlalchemy import text
@@ -12,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from app.models.user import User
+from app.schemas.user import PasswordUpdate, UserCreate
 from tests.conftest import create_fake_user, managed_db_session
 
 # Use the logger configured in conftest.py
@@ -142,6 +144,70 @@ def test_create_multiple_users(db_session):
     assert len(users) == 3
     logger.info(f"Successfully created {len(users)} users")
 
+def test_user_create_passwords_do_not_match():
+    user= create_fake_user()
+    user["confirm_password"] = "Different123!"
+
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user)
+
+    error_message = str(exc_info.value).lower()
+    assert "passwords do not match" in error_message
+
+def test_user_create_passwords_match():
+    user= create_fake_user()
+    user["password"] = "Same12345!"
+    user["confirm_password"] = "Same12345!"
+
+    UserCreate(**user)
+
+    assert user["password"] == user["confirm_password"]
+
+def test_user_create_passwords_strength_upper():
+    user= create_fake_user()
+    user["password"] = "same12345!"
+    user["confirm_password"] = "same12345!"
+
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user)
+
+    error_message = str(exc_info.value).lower()
+    assert "password must contain at least one uppercase letter" in error_message
+
+def test_user_create_passwords_strength_lower():
+    user= create_fake_user()
+    user["password"] = "SAME12345!"
+    user["confirm_password"] = "SAME12345!"
+
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user)
+
+    error_message = str(exc_info.value).lower()
+    assert "password must contain at least one lowercase letter" in error_message
+
+def test_user_create_passwords_strength_digit():
+    user= create_fake_user()
+    user["password"] = "Samepassword!"
+    user["confirm_password"] = "Samepassword!"
+
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user)
+
+    error_message = str(exc_info.value).lower()
+    assert "password must contain at least one digit" in error_message
+
+def test_user_create_passwords_strength_special():
+    user= create_fake_user()
+    user["password"] = "Same1234"
+    user["confirm_password"] = "Same1234"
+
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user)
+
+    error_message = str(exc_info.value).lower()
+    assert "password must contain at least one special character" in error_message
+
+
 # ======================================================================================
 # Query Tests
 # ======================================================================================
@@ -209,6 +275,39 @@ def test_update_with_refresh(db_session, test_user):
     assert test_user.email == new_email, "Email should have been updated"
     assert test_user.updated_at > original_update_time, "Updated time should be newer"
     logger.info(f"Successfully updated user {test_user.id}")
+
+def test_user_update_passwords_do_not_match():
+    data = {"current_password":"OldPassword123!",
+            "new_password": "NewPassword123!",
+             "confirm_new_password": "Different123!"}
+
+    with pytest.raises(ValidationError) as exc_info:
+        PasswordUpdate(**data)
+
+    error_message = str(exc_info.value).lower()
+    assert "new password and confirmation do not match" in error_message
+
+def test_user_update_passwords_old_same_new():
+    data = {"current_password":"OldPassword123!",
+            "new_password": "OldPassword123!",
+             "confirm_new_password": "OldPassword123!"}
+
+    with pytest.raises(ValidationError) as exc_info:
+        PasswordUpdate(**data)
+
+    error_message = str(exc_info.value).lower()
+    assert "new password must be different from current password" in error_message
+
+def test_user_update_passwords_match():
+    data = {"current_password":"OldPassword123!",
+            "new_password": "NewPassword123!",
+             "confirm_new_password": "NewPassword123!"}
+
+    update = PasswordUpdate(**data)
+
+    assert update.new_password == update.confirm_new_password
+    assert update.current_password != update.new_password
+
 
 # ======================================================================================
 # Bulk Operation Tests
