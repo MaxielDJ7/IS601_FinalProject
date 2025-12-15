@@ -103,3 +103,40 @@ def test_get_current_active_user_inactive(mock_verify_token):
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
     assert exc_info.value.detail == "Inactive user"
+
+def test_get_current_user_minimal_payload_sub(mock_verify_token):
+    user_id = uuid4()
+    mock_verify_token.return_value = {"sub": user_id}
+
+    user = get_current_user(token="validtoken")
+
+    assert isinstance(user, UserResponse)
+    assert user.id == user_id
+    assert user.username == "unknown"
+    assert user.email == "unknown@example.com"
+    assert user.is_active is True
+    assert user.is_verified is False
+
+def test_get_current_user_uuid_payload(mock_verify_token):
+    user_id = uuid4()
+    mock_verify_token.return_value = user_id
+
+    user = get_current_user(token="validtoken")
+
+    assert isinstance(user, UserResponse)
+    assert user.id == user_id
+    assert user.username == "unknown"
+    assert user.email == "unknown@example.com"
+    assert user.first_name == "Unknown"
+    assert user.last_name == "User"
+    assert user.is_active is True
+    assert user.is_verified is False
+
+def test_get_current_user_unexpected_token_payload(mock_verify_token):
+    mock_verify_token.return_value = "not-a-dict-or-uuid"
+
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(token="validtoken")
+
+    assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
+    assert exc_info.value.detail == "Could not validate credentials"
