@@ -5,6 +5,8 @@
 #          Relies on 'conftest.py' for database session management and test isolation.
 # ======================================================================================
 
+
+import uuid
 from pydantic import ValidationError
 import pytest
 import logging
@@ -12,6 +14,9 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
+from app.core.config import settings
+from app.auth import jwt
+from jose import jwt as jose_jwt
 from app.models.user import User
 from app.schemas.user import PasswordUpdate, UserCreate
 from tests.conftest import create_fake_user, managed_db_session
@@ -208,6 +213,8 @@ def test_user_create_passwords_strength_special():
     assert "password must contain at least one special character" in error_message
 
 
+
+
 # ======================================================================================
 # Query Tests
 # ======================================================================================
@@ -307,6 +314,39 @@ def test_user_update_passwords_match():
 
     assert update.new_password == update.confirm_new_password
     assert update.current_password != update.new_password
+
+
+def test_user_update_method_updates_fields_and_timestamp(db_session):
+    user_data = create_fake_user()
+
+    user = User(
+        first_name=user_data["first_name"],
+        last_name=user_data["last_name"],
+        email=user_data["email"],
+        username=user_data["username"],
+        password=user_data["password"],  # already hashed in tests
+    )
+
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    old_updated_at = user.updated_at
+
+    # Update with new unique values
+    new_email = f"updated_{user_data['email']}"
+    returned = user.update(
+        first_name="Updated",
+        email=new_email,
+    )
+
+    db_session.commit()
+    db_session.refresh(user)
+
+    assert returned is user
+    assert user.first_name == "Updated"
+    assert user.email == new_email
+    assert user.updated_at > old_updated_at
 
 
 # ======================================================================================
@@ -424,3 +464,154 @@ def test_error_handling():
             session.execute(text("INVALID SQL"))
     assert "INVALID SQL" in str(exc_info.value)
 
+# ======================================================================================
+# Hashed Passwords Tests
+# ======================================================================================
+
+def test_user_init_with_hashed_password(db_session):
+    user = User(
+        first_name="Test",
+        last_name="User",
+        email="test@example.com",
+        username="testuser",
+        hashed_password="hashed-secret",  
+    )
+
+    db_session.add(user)
+    db_session.commit()
+
+    assert user.password == "hashed-secret"
+
+def test_user_init_without_hashed_password(db_session):
+    user = User(
+        first_name="Test",
+        last_name="User",
+        email="test2@example.com",
+        username="testuser2",
+        password="already-hashed",
+    )
+
+    db_session.add(user)
+    db_session.commit()
+
+    assert user.password == "already-hashed"
+
+def test_user_hashed_password_property(db_session):
+    user_data = create_fake_user()
+
+    user = User(
+        first_name=user_data["first_name"],
+        last_name=user_data["last_name"],
+        email=user_data["email"],
+        username=user_data["username"],
+        password=user_data["password"],  # already "hashed" for tests
+    )
+
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    assert user.hashed_password == user.password
+
+# ======================================================================================
+# Authenticate User Tests
+# ======================================================================================
+
+def test_authenticate_user_not_found(db_session):
+    result = User.authenticate(
+        db=db_session,
+        username_or_email="doesnotexist",
+        password="Whatever123!",
+    )
+
+    assert result is None
+
+def test_authenticate_wrong_password(db_session):
+    user_data = create_fake_user()
+
+    hashed_pw = jwt.get_password_hash(user_data["password"])
+
+    user = User(
+        first_name=user_data["first_name"],
+        last_name=user_data["last_name"],
+        email=user_data["email"],
+        username=user_data["username"],
+        password=hashed_pw,  # hashed
+    )
+
+    db_session.add(user)
+    db_session.commit()
+
+    result = User.authenticate(
+        db=db_session,
+        username_or_email=user_data["username"],
+        password="WrongPassword123!",
+    )
+
+    assert result is None
+
+
+def test_authenticate_success(db_session):
+    user_data = create_fake_user()
+
+    hashed_pw = jwt.get_password_hash(user_data["password"])
+
+    user = User(
+        first_name=user_data["first_name"],
+        last_name=user_data["last_name"],
+        email=user_data["email"],
+        username=user_data["username"],
+        password=hashed_pw,
+    )
+
+    db_session.add(user)
+    db_session.commit()
+
+    result = User.authenticate(
+        db=db_session,
+        username_or_email=user_data["email"],
+        password=user_data["password"],  # plain text input
+    )
+
+    assert result is not None
+
+# ======================================================================================
+# JWT Token Tests
+# ======================================================================================
+
+def test_verify_token_invalid_token():
+    result = User.verify_token("this.is.not.a.jwt")
+    assert result is None
+
+def test_verify_token_missing_sub():
+    token = jose_jwt.encode(
+        {"foo": "bar"},
+        settings.JWT_SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+
+    result = User.verify_token(token)
+    assert result is None
+
+def test_verify_token_invalid_uuid_sub():
+    token = jose_jwt.encode(
+        {"sub": "not-a-uuid"},
+        settings.JWT_SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+
+    result = User.verify_token(token)
+    assert result is None
+
+def test_verify_token_valid():
+    user_id = uuid.uuid4()
+
+    token = jose_jwt.encode(
+        {"sub": str(user_id)},
+        settings.JWT_SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+
+    result = User.verify_token(token)
+
+    assert result == user_id
