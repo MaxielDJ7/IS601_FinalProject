@@ -7,6 +7,8 @@ from sqlalchemy.orm.session import Session
 import importlib
 import sys
 
+from app import database
+
 DATABASE_MODULE = "app.database"
 
 @pytest.fixture
@@ -53,3 +55,15 @@ def test_get_sessionmaker(mock_settings):
     engine = database.get_engine()
     SessionLocal = database.get_sessionmaker(engine)
     assert isinstance(SessionLocal, sessionmaker)
+
+def test_get_db_yields_and_closes_session():
+    mock_session = MagicMock()
+
+    with patch.object(database, "SessionLocal", return_value=mock_session):
+        gen = database.get_db()
+
+        db = next(gen)
+        assert db is mock_session
+
+        gen.close()
+        mock_session.close.assert_called_once()
