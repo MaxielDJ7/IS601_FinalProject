@@ -20,4 +20,3 @@ async def is_blacklisted(jti: str) -> bool:
     """Check if a token's JTI is blacklisted"""
     redis = await get_redis()
     return await redis.exists(f"blacklist:{jti}")
-    return exists > 0
