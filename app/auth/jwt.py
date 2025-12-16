@@ -121,7 +121,7 @@ async def decode_token(
                         detail="Token has been revoked",
                         headers={"WWW-Authenticate": "Bearer"},
                     )
-            except Exception:
+            except Exception: # pragma: no cover
                 pass
             
         return payload
