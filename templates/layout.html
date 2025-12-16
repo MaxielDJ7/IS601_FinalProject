@@ -77,8 +77,12 @@
   </header>
 
   <!-- Main content area -->
-  <main class="flex-grow w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <main class="min-h-screen pt-16
+         bg-[linear-gradient(to_bottom_right,rgba(14,165,233,0.85),rgba(99,102,241,0.85)),url('/static/images/bg-design.jpg')]
+         bg-cover bg-center">
+    <div class="min-h-screen">
     {% block content %}{% endblock %}
+  </div>
   </main>
 
   <!-- Footer -->
