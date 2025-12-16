@@ -44,7 +44,7 @@
 
 <body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
   <!-- Header -->
-  <header class="bg-blue-700 shadow-md">
+  <header class="bg-gray-500/70 backdrop-blur-md shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <!-- Brand / Logo -->
@@ -59,26 +59,55 @@
         </div>
   
         <!-- Right side: user greeting & logout -->
+        <!-- Right side: auth controls -->
         <div class="flex items-center space-x-4">
-          <span id="layoutUserWelcome" class="text-sm font-medium text-white hidden md:block"></span>
+
+          <!-- Logged OUT buttons -->
+          <div id="authLoggedOut" class="flex items-center space-x-4">
+            <a
+              href="{{ url_for('login_page') }}"
+              class="text-white hover:text-blue-100 font-medium transition"
+            >
+              Login
+            </a>
+
+            <a
+              href="{{ url_for('register_page') }}"
+              class="bg-white text-blue-700 px-4 py-2 rounded-md
+                    hover:bg-blue-50 transition font-semibold"
+            >
+              Register
+            </a>
+          </div>
+
+          <!-- Logged IN greeting -->
+          <span
+            id="layoutUserWelcome"
+            class="text-sm font-medium text-white hidden md:block"
+          ></span>
+
+          <!-- Logout button -->
           <button
             id="layoutLogoutBtn"
             class="px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors duration-200 
                   font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center"
           >
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
             </svg>
             <span class="hidden sm:inline">Logout</span>
           </button>
+
         </div>
+
       </div>
     </div>
   </header>
 
   <!-- Main content area -->
   <main class="min-h-screen pt-16
-         bg-[linear-gradient(to_bottom_right,rgba(14,165,233,0.85),rgba(99,102,241,0.85)),url('/static/images/bg-design.jpg')]
+         bg-[linear-gradient(to_bottom_right,rgba(14,165,233,0.75),rgba(99,102,241,0.75)),url('/static/images/bg-design.jpg')]
          bg-cover bg-center">
     <div class="min-h-screen">
     {% block content %}{% endblock %}
@@ -127,49 +156,32 @@
     }
 
     // Set user welcome message if logged in
+    const token = localStorage.getItem('access_token');
+
+    const authLoggedOut = document.getElementById('authLoggedOut');
     const welcomeElement = document.getElementById('layoutUserWelcome');
-    if (welcomeElement) {
+    const logoutBtn = document.getElementById('layoutLogoutBtn');
+
+    if (token) {
+      // Logged IN
+      if (authLoggedOut) authLoggedOut.classList.add('hidden');
+
       const username = localStorage.getItem('username');
-      if (username) {
+      if (welcomeElement && username) {
         welcomeElement.textContent = `Welcome, ${username}!`;
         welcomeElement.classList.remove('hidden');
-      } else {
-        welcomeElement.classList.add('hidden');
       }
+
+      if (logoutBtn) logoutBtn.classList.remove('hidden');
+    } else {
+      // Logged OUT
+      if (authLoggedOut) authLoggedOut.classList.remove('hidden');
+      if (welcomeElement) welcomeElement.classList.add('hidden');
+      if (logoutBtn) logoutBtn.classList.add('hidden');
     }
 
-    // Logout button logic
-    const logoutBtn = document.getElementById('layoutLogoutBtn');
-    if (logoutBtn) {
-      // Only show logout button if user is logged in
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        logoutBtn.classList.add('hidden');
-      } else {
-        logoutBtn.classList.remove('hidden');
-        
-        // Attach logout handler
-        logoutBtn.addEventListener('click', function() {
-          if (confirm('Are you sure you want to logout?')) {
-            // Show logout in progress
-            const originalContent = logoutBtn.innerHTML;
-            logoutBtn.innerHTML = '<svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Logging out...';
-            logoutBtn.disabled = true;
-            
-            // Clear local storage
-            localStorage.clear();
-            
-            // Show toast notification
-            showToast('Logged out successfully', 'success');
-            
-            // Redirect after a short delay
-            setTimeout(() => {
-              window.location.href = '/login';
-            }, 500);
-          }
-        });
-      }
-    }
+
+   
 
     // Toast notification system
     window.showToast = function(message, type = 'info', duration = 5000) {
