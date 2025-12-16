@@ -20,6 +20,8 @@
 
 - Full CRUD (Create, Read, Update, Delete)
 
+- ⭐️ NEW Feature: Exponentiation **
+
 ## 🖥️ Frontend (Jinja2)
 
 - Registration page
@@ -63,9 +65,8 @@
 1. Clone the repository
 
 ```
-git clone https://github.com/MaxielDJ7/IS601_M14.git
+git clone https://github.com/MaxielDJ7/IS601_FinalProject.git
 
-cd is601_module13
 
 ```
 
@@ -101,7 +102,7 @@ http://127.0.0.1:8000
 # 🐳 Running with Docker (Backend + Postgres + Redis)
 
 ```
-docker-compose up --build
+docker compose up --build
 
 ```
 | Service    | URL                                            |
@@ -110,7 +111,7 @@ docker-compose up --build
 | PostgreSQL | localhost:5432                                 |
 | Redis      | localhost:6379                                 |
 
-My Dockerhub: https://hub.docker.com/r/maxieldj7/is601_module14
+My Dockerhub: https://hub.docker.com/r/maxieldj7/is601_finalproject
 
 # 🧪 Running Tests
 
@@ -123,11 +124,7 @@ pytest -vv
 
 ## 🎭 Playwright End-to-End Tests
 
-Install browsers first:
-```
-playwright install
 
-```
 Run all E2E tests:
 ```
 pytest tests/e2e -vv
@@ -135,4 +132,4 @@ pytest tests/e2e -vv
 
 # 🤖 GitHub Actions CI/CD
 
-![CI](https://github.com/MaxielDJ7/IS601_M14/actions/workflows/test.yml/badge.svg)
+![CI](https://github.com/MaxielDJ7/IS601_FinalProject/actions/workflows/test.yml/badge.svg)
